@@ -1,0 +1,276 @@
+/* EB Garamond, embedded locally and also written into saved PDFs.
+   This copy is deliberate: the custom protocol the renderer is served
+   over will not resolve above renderer/, so the CSS cannot share the
+   one in assets/ that lib/pdf-writer.js reads from disk. */
+@font-face {
+  font-family: 'EB Garamond';
+  src: url('fonts/EBGaramond-Text.ttf') format('truetype');
+  font-weight: 400;
+  font-display: block;
+}
+
+/* Light is the default; every colour is a token so dark mode is a swap. */
+:root {
+  --bg: #f7f7f8;
+  --island: #ffffff;
+  --island-border: #e9e9ed;
+  --shadow: 0 2px 5px rgba(30,30,30,.08), 0 0 0 1px rgba(30,30,30,.04);
+  --text: #1e1e1e;
+  --muted: #7a7a84;
+  --accent: #6965db;
+  --accent-soft: #e0dfff;
+  --accent-ink: #4a47b5;
+  --hover: #f1f0ff;
+  --control: #f4f4f6;
+  --bar: #1e1e1e;
+  --status-bg: rgba(255,255,255,.85);
+  --page-shadow: 0 1px 3px rgba(30,30,30,.14), 0 6px 22px rgba(30,30,30,.10);
+}
+
+/* Follow the system unless the user has chosen explicitly. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #121212;
+    --island: #232329;
+    --island-border: #31313a;
+    --shadow: 0 2px 6px rgba(0,0,0,.45), 0 0 0 1px rgba(255,255,255,.04);
+    --text: #e3e3e8;
+    --muted: #9a9aa6;
+    --accent: #a8a5ff;
+    --accent-soft: #403e6a;
+    --accent-ink: #d5d3ff;
+    --hover: #2d2d38;
+    --control: #2b2b33;
+    --bar: #e3e3e8;
+    --status-bg: rgba(35,35,41,.85);
+    --page-shadow: 0 1px 3px rgba(0,0,0,.5), 0 8px 28px rgba(0,0,0,.45);
+  }
+}
+
+:root[data-theme="dark"] {
+  --bg: #121212;
+  --island: #232329;
+  --island-border: #31313a;
+  --shadow: 0 2px 6px rgba(0,0,0,.45), 0 0 0 1px rgba(255,255,255,.04);
+  --text: #e3e3e8;
+  --muted: #9a9aa6;
+  --accent: #a8a5ff;
+  --accent-soft: #403e6a;
+  --accent-ink: #d5d3ff;
+  --hover: #2d2d38;
+  --control: #2b2b33;
+  --bar: #e3e3e8;
+  --status-bg: rgba(35,35,41,.85);
+  --page-shadow: 0 1px 3px rgba(0,0,0,.5), 0 8px 28px rgba(0,0,0,.45);
+}
+
+* { box-sizing: border-box; }
+html, body {
+  margin: 0; height: 100%;
+  font: 13px/1.45 "Assistant", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  color: var(--text); background: var(--bg);
+  overflow: hidden; user-select: none;
+  -webkit-font-smoothing: antialiased;
+}
+body { display: flex; flex-direction: column; }
+
+#titlebar {
+  position: fixed; top: 0; left: 0; right: 0; height: 30px;
+  -webkit-app-region: drag; z-index: 1;
+}
+
+/* ---------------------------------------------------------------- islands */
+.island {
+  position: fixed; z-index: 10;
+  background: var(--island);
+  border: 1px solid var(--island-border);
+  border-radius: 10px;
+  box-shadow: var(--shadow);
+  padding: 5px;
+  display: flex; align-items: center; gap: 4px;
+  -webkit-app-region: no-drag;
+}
+.island.hidden { display: none; }
+
+#toolbar { top: 14px; left: 50%; transform: translateX(-50%); }
+/* Windowed, macOS puts its close/minimise/zoom buttons in the top-left, so the
+   document name starts to their right. Full screen there are no buttons, and
+   it can sit at the edge like everything else. */
+#titleIsland { top: 14px; left: 96px; max-width: 30vw; padding: 4px 10px; gap: 0; }
+:root[data-fullscreen="true"] #titleIsland { left: 14px; }
+#docName {
+  font: inherit; font-size: 13px; color: var(--text);
+  background: transparent; border: none; outline: none;
+  padding: 3px 4px; border-radius: 5px; min-width: 60px; max-width: 26vw;
+  text-overflow: ellipsis;
+}
+#docName:hover { background: var(--hover); }
+#docName:focus { background: var(--hover); box-shadow: inset 0 0 0 1px var(--accent); }
+#titleIsland .ext { color: var(--muted); font-size: 12.5px; padding-right: 2px; }
+#fileIsland { top: 14px; right: 14px; gap: 6px; }
+#zoomIsland { bottom: 14px; left: 14px; }
+#panel {
+  top: 66px; left: 14px; width: 194px;
+  flex-direction: column; align-items: stretch; gap: 14px; padding: 12px;
+}
+
+.tools { display: flex; align-items: center; gap: 2px; }
+.tools .divider { width: 1px; height: 22px; background: var(--island-border); margin: 0 4px; }
+
+/* ---------------------------------------------------------------- buttons */
+button {
+  font: inherit; color: var(--text); background: transparent;
+  border: none; border-radius: 8px;
+  padding: 6px 10px; cursor: pointer;
+}
+button:hover { background: var(--hover); }
+button:disabled { opacity: .35; cursor: default; }
+button:disabled:hover { background: transparent; }
+
+button.primary {
+  background: var(--accent); color: #fff; font-weight: 600; padding: 6px 14px;
+}
+:root[data-theme="dark"] button.primary,
+:root:not([data-theme="light"]) button.primary { color: #1a1a22; }
+button.primary:hover { filter: brightness(1.08); }
+button.primary:disabled:hover { background: var(--accent); }
+button.ghost { border: 1px solid var(--island-border); }
+button.big { padding: 10px 20px; font-size: 14px; margin-top: 14px; }
+
+.tool {
+  width: 36px; height: 36px; display: grid; place-items: center; padding: 0;
+  position: relative;
+}
+.tool svg { width: 18px; height: 18px; fill: none; stroke: var(--text);
+            stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.tool:hover { background: var(--hover); }
+.tool.active { background: var(--accent-soft); }
+.tool.active svg { stroke: var(--accent-ink); }
+
+/* ---------------------------------------------------------------- panel */
+.panel-label {
+  display: block; font-size: 10.5px; letter-spacing: .03em;
+  text-transform: uppercase; color: var(--muted); margin-bottom: 6px;
+}
+.swatches { display: flex; gap: 6px; flex-wrap: wrap; }
+.swatch {
+  width: 24px; height: 24px; padding: 0; border-radius: 6px;
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,.1);
+}
+.swatch.active { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.segmented { display: flex; gap: 5px; }
+.segmented button {
+  flex: 1; height: 30px; display: grid; place-items: center;
+  background: var(--control); border-radius: 7px; padding: 0;
+}
+.segmented button:hover { background: var(--hover); }
+.segmented button.active { background: var(--accent-soft); }
+.segmented .bar { background: var(--bar); border-radius: 2px; width: 15px; }
+.segmented .sz { font-weight: 600; color: var(--text); }
+.segmented button.active .sz { color: var(--accent-ink); }
+
+/* ---------------------------------------------------------------- viewer */
+#viewer { flex: 1; overflow: auto; position: relative; }
+#pages {
+  display: none; flex-direction: column; align-items: center;
+  gap: 18px; padding: 76px 0 80px;
+}
+#pages.ready { display: flex; }
+
+#empty { position: absolute; inset: 0; display: grid; place-items: center; }
+#empty.hidden { display: none; }
+.empty-card { text-align: center; max-width: 440px; }
+.empty-card h1 {
+  font-family: 'EB Garamond', Georgia, serif;
+  font-size: 34px; font-weight: 400; margin: 0 0 10px;
+}
+.empty-card p { color: var(--muted); margin: 0; font-size: 14px; }
+.hints { list-style: none; padding: 0; margin: 26px 0 0; color: var(--muted); font-size: 12px; }
+.hints li { margin: 5px 0; }
+.hints b { color: var(--text); font-weight: 600; }
+
+/* ---------------------------------------------------------------- pages */
+.page { position: relative; background: #fff; box-shadow: var(--page-shadow);
+        border-radius: 2px; flex: none; }
+.page canvas { display: block; border-radius: 2px; }
+
+.textLayer {
+  position: absolute; top: 0; left: 0; overflow: hidden; line-height: 1;
+  opacity: .25; forced-color-adjust: none; user-select: text;
+  transform-origin: 0 0;
+}
+.textLayer[data-main-rotation="90"] { transform: rotate(90deg) translateY(-100%); }
+.textLayer[data-main-rotation="180"] { transform: rotate(180deg) translate(-100%, -100%); }
+.textLayer[data-main-rotation="270"] { transform: rotate(270deg) translateX(-100%); }
+.textLayer span, .textLayer br {
+  color: transparent; position: absolute; white-space: pre;
+  cursor: text; transform-origin: 0 0;
+}
+.textLayer ::selection { background: rgba(105,101,219,.35); }
+.textLayer.inert { pointer-events: none; user-select: none; }
+
+.overlay { position: absolute; inset: 0; }
+.overlay.drawing { cursor: crosshair; }
+.overlay.inert { pointer-events: none; }
+.overlay .hit { pointer-events: all; }
+/* When the overlay is inert (a text-markup tool is active) the hit areas must
+   be inert too, or an existing highlight swallows the pointer and you cannot
+   select the text under it to mark it again. */
+.overlay.inert .hit { pointer-events: none; }
+.overlay .hit.movable { cursor: move; }
+.handle { fill: #fff; stroke: var(--accent); stroke-width: 1.5; cursor: nwse-resize; }
+.selbox { fill: none; stroke: var(--accent); stroke-width: 1.2; stroke-dasharray: 4 3; }
+.rotstem { stroke: var(--accent); stroke-width: 1; }
+.rothandle { fill: #fff; stroke: var(--accent); stroke-width: 1.5; cursor: grab; }
+.rothandle:active { cursor: grabbing; }
+
+.pageLabel {
+  position: absolute; left: 50%; transform: translateX(-50%);
+  bottom: -20px; font-size: 11px; color: var(--muted);
+}
+
+.ftEditor {
+  /* Sits over the page, which stays white in both themes. */
+  position: absolute; background: transparent; color: #1e1e1e;
+  border: 1px dashed var(--accent); border-radius: 4px;
+  padding: 2px 3px; margin: 0; resize: none; outline: none;
+  font-family: 'EB Garamond', Georgia, serif; line-height: 1.2;
+  user-select: text; z-index: 5; overflow: hidden;
+}
+.ftEditor::placeholder { color: rgba(30,30,30,.3); }
+
+/* ---------------------------------------------------------------- chrome */
+#status {
+  position: fixed; bottom: 16px; right: 16px;
+  font-size: 11.5px; color: var(--muted);
+  background: var(--status-bg); border-radius: 7px; padding: 4px 10px;
+  pointer-events: none; z-index: 9;
+}
+#status .dirty { color: #e8a33d; }
+
+#toast {
+  position: fixed; bottom: 22px; left: 50%;
+  transform: translateX(-50%) translateY(16px);
+  background: #1e1e1e; color: #fff; border-radius: 9px;
+  padding: 9px 16px; opacity: 0; pointer-events: none;
+  transition: opacity .16s, transform .16s; max-width: 66vw;
+  text-align: center; font-size: 12.5px; z-index: 20;
+}
+#toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+#toast.error { background: #c92a2a; }
+
+/* Theme toggle. The renderer always writes an explicit data-theme, so these
+   rules never have to second-guess the system setting. */
+#themeBtn, #undoBtn, #redoBtn {
+  width: 34px; height: 32px; display: grid; place-items: center; padding: 0;
+}
+#undoBtn svg, #redoBtn svg {
+  width: 17px; height: 17px; fill: none; stroke: var(--text);
+  stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round;
+}
+#themeBtn svg { width: 17px; height: 17px; fill: none; stroke: var(--text);
+                stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+#themeBtn .sun { display: none; }
+:root[data-theme="dark"] #themeBtn .sun { display: block; }
+:root[data-theme="dark"] #themeBtn .moon { display: none; }

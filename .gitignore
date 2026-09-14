@@ -1,0 +1,35 @@
+# dependencies and build output
+node_modules/
+dist/
+build/
+.venv/
+
+# generated at install / test time
+renderer/vendor/
+test/fixtures/
+
+# large font sources; the 42KB subset the app actually uses is committed
+assets/fonts/EBGaramond-Regular.ttf
+assets/fonts/EBGaramond-Static.ttf
+
+# Piper voice models (~60MB each), downloaded on demand
+demo/video/voices/
+
+# raw screen recordings and intermediate audio
+demo/video/*.mov
+demo/video/*.wav
+demo/video/*.aiff
+demo/video/*.m4a
+demo/video/Scrawl-*.mp4
+demo/video/scrawl-*.mp4
+
+# working artefacts: these contain screenshots of a real desktop and a
+# personal annotated document, so they are deliberately not published
+demo/*.png
+demo/annotated.pdf
+demo/compare-*.pdf
+demo/sample.pdf
+
+.DS_Store
+demo/video/*.png
+demo/attention.pdf

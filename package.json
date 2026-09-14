@@ -1,0 +1,36 @@
+{
+  "name": "marginalia",
+  "version": "1.0.0",
+  "description": "Marginalia \u2014 your PDF is the canvas: highlight, draw, write and paste on it, and it saves itself as real PDF annotations.",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "test": "node test/make-fixtures.js && node test/roundtrip.js",
+    "test:ui": "node test/make-fixtures.js && electron test/ui-test.js",
+    "test:all": "npm run test && npm run test:ui && npm run test:sanity && npm run test:functions && npm run test:reopen",
+    "fixtures": "node test/make-fixtures.js",
+    "postinstall": "node scripts/vendor-pdfjs.js",
+    "test:preview": "electron test/compare-preview.js",
+    "demo": "electron demo/demo.js",
+    "test:sanity": "electron test/sanity.js",
+    "test:functions": "electron test/functions.js",
+    "icon": "node scripts/make-icon.js",
+    "pack": "npx @electron/packager . \"Marginalia\" --platform=darwin --arch=arm64 --out=dist --overwrite --prune=true --icon=build/icon.icns --app-bundle-id=com.namyalg.pdfcanvas --app-version=1.0.0 --ignore=\"(^/\\\\.venv$|^/test$|^/demo$|^/dist$|^/build$|^/QA-REPORT\\\\.md$|^/TEST-STRATEGY\\\\.md$|^/\\\\.git)\"",
+    "install-app": "node scripts/install-app.js",
+    "test:reopen": "./scripts/run-reopen-test.sh",
+    "test:interaction": "electron test/interaction.js"
+  },
+  "author": "",
+  "license": "MIT",
+  "type": "commonjs",
+  "dependencies": {
+    "@pdf-lib/fontkit": "^1.1.1",
+    "pdf-lib": "^1.17.1",
+    "pdfjs-dist": "^4.10.38"
+  },
+  "devDependencies": {
+    "@electron/packager": "^20.3.0",
+    "electron": "^44.3.0"
+  },
+  "productName": "Marginalia"
+}

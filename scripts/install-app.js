@@ -23,6 +23,24 @@ if (fs.existsSync(icns)) {
   fs.copyFileSync(icns, path.join(built, 'Contents', 'Resources', 'electron.icns'));
 }
 
+// MIT, Apache-2.0 and the OFL all require their notices to travel with the
+// code. @electron/packager writes Electron's and Chromium's beside the bundle,
+// so handing someone just Marginalia.app would ship their code without them.
+// Put everything inside Contents/Resources/, where the Licenses menu item and
+// anyone poking at the bundle can find it.
+const outDir = path.join(__dirname, '..', 'dist', `${NAME}-darwin-${process.arch}`);
+const resources = path.join(built, 'Contents', 'Resources');
+const notices = [
+  [path.join(__dirname, '..', 'THIRD-PARTY-LICENSES.md'), 'THIRD-PARTY-LICENSES.md'],
+  [path.join(__dirname, '..', 'LICENSE'), 'LICENSE'],
+  [path.join(outDir, 'LICENSES.chromium.html'), 'LICENSES.chromium.html'],
+  [path.join(outDir, 'LICENSE'), 'LICENSE.electron'],
+];
+for (const [from, to] of notices) {
+  if (fs.existsSync(from)) fs.copyFileSync(from, path.join(resources, to));
+  else console.warn(`missing notice: ${path.basename(from)} — run npm run pack first`);
+}
+
 // Ad-hoc signature: unsigned bundles get refused more often than not.
 try {
   execFileSync('codesign', ['--force', '--deep', '--sign', '-', built], { stdio: 'ignore' });

@@ -209,6 +209,23 @@ function buildMenu() {
       ],
     },
     { role: 'windowMenu' },
+    {
+      role: 'help',
+      submenu: [
+        {
+          label: 'Licenses',
+          click: () => {
+            // Packaged: alongside the app's resources. Dev: the repo root.
+            const packaged = path.join(process.resourcesPath || '', 'THIRD-PARTY-LICENSES.md');
+            const local = path.join(__dirname, 'THIRD-PARTY-LICENSES.md');
+            const file = fs.existsSync(packaged) ? packaged : local;
+            if (fs.existsSync(file)) shell.openPath(file);
+            else dialog.showMessageBox({ message: 'Licenses',
+              detail: 'Run `npm run licenses` to generate THIRD-PARTY-LICENSES.md.' });
+          },
+        },
+      ],
+    },
   ];
   Menu.setApplicationMenu(Menu.buildFromTemplate(template));
 }

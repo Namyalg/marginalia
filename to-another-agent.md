@@ -87,8 +87,34 @@ npm run pack          # builds dist/Marginalia-darwin-arm64/Marginalia.app
 npm run install-app   # copies it to ~/Desktop and pins it to the Dock
 ```
 
+What each step does, since the order matters:
+
+- `npm run icon` renders `build/icon.icns` from the source art. Skip it and the
+  packager falls back to Electron's default icon.
+- `npm run pack` first runs `npm run licenses`, which regenerates
+  `THIRD-PARTY-LICENSES.md` by reading the licence text out of the packages
+  actually installed in `node_modules` — never restated by hand, so it cannot
+  drift. Then `@electron/packager` builds
+  `dist/Marginalia-darwin-arm64/Marginalia.app`. `--arch` is hardcoded to
+  `arm64`; on an Intel Mac change it to `x64` in the `pack` script.
+- `npm run install-app` copies the bundle to `~/Desktop`, ad-hoc signs it,
+  strips the quarantine attribute and pins it to the Dock. It also copies the
+  four licence files into `Contents/Resources/` — see below.
+
 The bundle is signed ad-hoc, so the first launch needs right-click → Open to get
-past Gatekeeper. That is expected and not a bug.
+past Gatekeeper. That is expected and not a bug. Ad-hoc means no Apple Developer
+ID: fine for yourself, not enough to hand the app to a stranger without that
+warning.
+
+**If you redistribute the .app, keep the licences with it.** The bundle embeds
+Electron, Chromium, pdf-lib, pdf.js, fontkit and EB Garamond, and MIT,
+Apache-2.0 and the OFL each require their notice to travel with the code.
+`@electron/packager` writes Electron's and Chromium's *beside* the bundle in
+`dist/`, not inside it, so a bare `Marginalia.app` would ship their code with no
+notices. `install-app` fixes that by copying `LICENSE`, `LICENSE.electron`,
+`LICENSES.chromium.html` and `THIRD-PARTY-LICENSES.md` into
+`Contents/Resources/`, reachable from the app at **Help → Licenses**. If you
+change how the app is packaged, keep that step.
 
 ## 5. One rule, please
 

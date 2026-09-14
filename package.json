@@ -15,7 +15,8 @@
     "test:sanity": "electron test/sanity.js",
     "test:functions": "electron test/functions.js",
     "icon": "node scripts/make-icon.js",
-    "pack": "npx @electron/packager . \"Marginalia\" --platform=darwin --arch=arm64 --out=dist --overwrite --prune=true --icon=build/icon.icns --app-bundle-id=com.namyalg.pdfcanvas --app-version=1.0.0 --ignore=\"(^/\\\\.venv$|^/test$|^/demo$|^/dist$|^/build$|^/QA-REPORT\\\\.md$|^/TEST-STRATEGY\\\\.md$|^/\\\\.git)\"",
+    "licenses": "node scripts/collect-licenses.js",
+    "pack": "npm run licenses && npx @electron/packager . \"Marginalia\" --platform=darwin --arch=arm64 --out=dist --overwrite --prune=true --icon=build/icon.icns --app-bundle-id=com.namyalg.pdfcanvas --app-version=1.0.0 --ignore=\"(^/\\\\.venv$|^/test$|^/demo$|^/dist$|^/build$|^/QA-REPORT\\\\.md$|^/TEST-STRATEGY\\\\.md$|^/\\\\.git)\"",
     "install-app": "node scripts/install-app.js",
     "test:reopen": "./scripts/run-reopen-test.sh",
     "test:interaction": "electron test/interaction.js"

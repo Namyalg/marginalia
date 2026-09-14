@@ -245,7 +245,10 @@ the Text tool writing in pale yellow on white paper.
 
 ## Credits and licence
 
-Marginalia is MIT licensed — see [LICENSE](LICENSE).
+Marginalia is MIT licensed — see [LICENSE](LICENSE). The packaged app bundles
+the components below and ships their notices inside it, reachable at
+**Help → Licenses**; `npm run licenses` regenerates
+[THIRD-PARTY-LICENSES.md](THIRD-PARTY-LICENSES.md) from the installed packages.
 
 **Excalidraw** ([MIT](https://github.com/excalidraw/excalidraw/blob/master/LICENSE),
 Copyright (c) 2020 Excalidraw) is where the idea came from: an infinite canvas
